@@ -1,3 +1,4 @@
+
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { Application, Prisma } from '@prisma/client';
@@ -5,6 +6,13 @@ import { Application, Prisma } from '@prisma/client';
 @Injectable()
 export class ApplicationService {
   constructor(private prisma: PrismaService) {}
+
+  async findByUser(userId: string): Promise<Application[]> {
+    return this.prisma.application.findMany({
+      where: { userId },
+      include: { user: true, job: true },
+    });
+  }
 
   async create(data: any): Promise<Application> {
     // Map DTO to Prisma input

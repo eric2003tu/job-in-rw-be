@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Request } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { ApplicationService } from './application.service';
-import type { Application } from '@prisma/client';
+import { ApplicationDto } from './dto/application.dto';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
 
@@ -24,23 +25,23 @@ export class ApplicationController {
       },
     },
   }})
-  @ApiResponse({ status: 201, description: 'Application submitted', type: 'Application' })
-  create(@Body() data: CreateApplicationDto): Promise<Application> {
-    return this.applicationService.create(data);
+  @ApiResponse({ status: 201, description: 'Application submitted', type: ApplicationDto })
+  create(@Body() data: CreateApplicationDto): Promise<ApplicationDto> {
+    return this.applicationService.create(data) as any;
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all applications' })
-  @ApiResponse({ status: 200, description: 'List of applications', type: 'Application', isArray: true })
-  findAll(): Promise<Application[]> {
-    return this.applicationService.findAll();
+  @ApiResponse({ status: 200, description: 'List of applications', type: ApplicationDto, isArray: true })
+  findAll(): Promise<ApplicationDto[]> {
+    return this.applicationService.findAll() as any;
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get application by ID' })
-  @ApiResponse({ status: 200, description: 'Application found', type: 'Application' })
-  findOne(@Param('id') id: string): Promise<Application | null> {
-    return this.applicationService.findOne(id);
+  @ApiResponse({ status: 200, description: 'Application found', type: ApplicationDto })
+  findOne(@Param('id') id: string): Promise<ApplicationDto | null> {
+    return this.applicationService.findOne(id) as any;
   }
 
   @Patch(':id')
@@ -53,15 +54,23 @@ export class ApplicationController {
       },
     },
   }})
-  @ApiResponse({ status: 200, description: 'Application updated', type: 'Application' })
-  update(@Param('id') id: string, @Body() data: UpdateApplicationDto): Promise<Application> {
-    return this.applicationService.update(id, data);
+  @ApiResponse({ status: 200, description: 'Application updated', type: ApplicationDto })
+  update(@Param('id') id: string, @Body() data: UpdateApplicationDto): Promise<ApplicationDto> {
+    return this.applicationService.update(id, data) as any;
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete application' })
-  @ApiResponse({ status: 200, description: 'Application deleted', type: 'Application' })
-  remove(@Param('id') id: string): Promise<Application> {
-    return this.applicationService.remove(id);
+  @ApiResponse({ status: 200, description: 'Application deleted', type: ApplicationDto })
+  remove(@Param('id') id: string): Promise<ApplicationDto> {
+    return this.applicationService.remove(id) as any;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('my')
+  @ApiOperation({ summary: 'Get applications made by the logged-in user' })
+  @ApiResponse({ status: 200, description: 'List of applications made by user', type: ApplicationDto, isArray: true })
+  findMyApplications(@Request() req): Promise<ApplicationDto[]> {
+    return this.applicationService.findByUser(req.user.id) as any;
   }
 }
