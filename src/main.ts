@@ -12,7 +12,10 @@ async function bootstrap() {
 
   // Setup CORS
   // Allow all localhost origins from port 3001 to 3020
-  const allowedOrigins = Array.from({ length: 20 }, (_, i) => `http://localhost:${3001 + i}`);
+  const allowedOrigins = [
+    ...Array.from({ length: 20 }, (_, i) => `http://localhost:${3001 + i}`),
+    'https://job-in-rw.vercel.app',
+  ];
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,
