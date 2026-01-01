@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { Application, Prisma } from '@prisma/client';
@@ -10,12 +9,17 @@ export class ApplicationService {
   async findByUser(userId: string): Promise<Application[]> {
     return this.prisma.application.findMany({
       where: { userId },
-      include: { user: true, job: true },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  async create(data: any): Promise<Application> {
-    // Map DTO to Prisma input
+  async create(data: {
+    userId: string;
+    jobId: string;
+    coverLetter?: string;
+    resumeUrl?: string;
+    status?: any;
+  }): Promise<Application> {
     return this.prisma.application.create({
       data: {
         coverLetter: data.coverLetter,
@@ -28,18 +32,31 @@ export class ApplicationService {
   }
 
   async findAll(): Promise<Application[]> {
-    return this.prisma.application.findMany({ include: { user: true, job: true } });
+    return this.prisma.application.findMany({
+      include: { user: true, job: true },
+    });
   }
 
   async findOne(id: string): Promise<Application | null> {
-    return this.prisma.application.findUnique({ where: { id }, include: { user: true, job: true } });
+    return this.prisma.application.findUnique({
+      where: { id },
+      include: { user: true, job: true },
+    });
   }
 
-  async update(id: string, data: Prisma.ApplicationUpdateInput): Promise<Application> {
-    return this.prisma.application.update({ where: { id }, data });
+  async update(
+    id: string,
+    data: Prisma.ApplicationUpdateInput,
+  ): Promise<Application> {
+    return this.prisma.application.update({
+      where: { id },
+      data,
+    });
   }
 
   async remove(id: string): Promise<Application> {
-    return this.prisma.application.delete({ where: { id } });
+    return this.prisma.application.delete({
+      where: { id },
+    });
   }
 }

@@ -1,14 +1,37 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import type { User } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('users')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  @ApiOperation({ summary: 'Get current user profile with jobs and applications' })
+  @ApiResponse({ status: 200, description: 'Current user profile with jobs and applications', schema: { example: {
+    id: 'user-uuid',
+    name: 'John Doe',
+    email: 'john@example.com',
+    jobs: [
+      { id: 'job-uuid', title: 'Backend Developer', /* ...other job fields... */ }
+    ],
+    applications: [
+      { id: 'app-uuid', jobId: 'job-uuid', coverLetter: '...', /* ...other app fields... */ }
+    ]
+  } } })
+  async getProfile(@Request() req) {
+    const user = await this.userService.findFullProfile(req.user.id);
+    if (!user) {
+      throw new (await import('@nestjs/common')).NotFoundException('User not found');
+    }
+    return user;
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create a user' })

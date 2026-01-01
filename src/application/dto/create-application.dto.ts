@@ -2,10 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ApplicationStatus } from '@prisma/client';
 import { IsString, IsOptional, IsEnum } from 'class-validator';
 
+
 export class CreateApplicationDto {
-  @ApiProperty()
-  @IsString()
-  userId: string;
 
   @ApiProperty()
   @IsString()

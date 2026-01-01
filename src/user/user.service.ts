@@ -18,6 +18,25 @@ export class UserService {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
+  async findFullProfile(id: string): Promise<any | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        jobs: {
+          include: {
+            applications: true,
+          },
+        },
+        applications: {
+          include: {
+            job: true,
+          },
+        },
+      },
+    });
+    return user;
+  }
+
   async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
     return this.prisma.user.update({ where: { id }, data });
   }

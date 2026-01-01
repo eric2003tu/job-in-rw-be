@@ -84,7 +84,20 @@ export class JobController {
     return this.jobService.findAll();
   }
 
+
   // ================= GET ONE =================
+  @Get(':id')
+  @ApiOperation({ summary: 'Get job details by id' })
+  @ApiResponse({ status: 200, description: 'Job details', type: JobWithAppCountDto })
+  async findOne(@Param('id') id: string): Promise<JobWithAppCountDto> {
+    const job = await this.jobService.findOne(id);
+    if (!job) {
+      throw new (await import('@nestjs/common')).NotFoundException('Job not found');
+    }
+    return job;
+  }
+
+  // ================= UPDATE =================
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Update job' })
