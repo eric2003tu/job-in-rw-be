@@ -11,9 +11,9 @@ async function bootstrap() {
   setupSwagger(app);
 
   // Setup CORS
-  // Allow all localhost origins from port 3001 to 3020
+  // Allow all localhost origins from port 3000 to 3019
   const allowedOrigins = [
-    ...Array.from({ length: 20 }, (_, i) => `http://localhost:${3001 + i}`),
+    ...Array.from({ length: 20 }, (_, i) => `http://localhost:${3000 + i}`),
     'https://job-in-rw.vercel.app',
   ];
   app.enableCors({
