@@ -19,6 +19,9 @@ export class JobService {
     });
   }
 
+  // ...existing code...
+
+
   async findAll(): Promise<any[]> {
     const jobs = await this.prisma.job.findMany({
       include: {
@@ -83,5 +86,22 @@ export class JobService {
       ...job,
       applicationsCount: job._count.applications,
     }));
+  }
+
+  // Get all applications made on jobs posted by a specific user
+  async findApplicationsOnMyJobs(userId: string) {
+    // Find all jobs posted by this user
+    const jobs = await this.prisma.job.findMany({
+      where: { postedById: userId },
+      select: { id: true },
+    });
+    const jobIds = jobs.map(j => j.id);
+    if (jobIds.length === 0) return [];
+    // Find all applications for these jobs, include job and user info
+    return this.prisma.application.findMany({
+      where: { jobId: { in: jobIds } },
+      include: { user: true, job: true },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }

@@ -71,6 +71,20 @@ export class JobController {
     return this.jobService.findByUser(req.user.id);
   }
 
+  // ================= APPLICATIONS ON MY JOBS =================
+  @UseGuards(JwtAuthGuard)
+  @Get('my/applications')
+  @ApiOperation({ summary: 'Get all applications made on jobs posted by the logged-in user' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of applications on jobs posted by user',
+    type: Object, // Ideally, a DTO for Application with job info
+    isArray: true,
+  })
+  async findApplicationsOnMyJobs(@Request() req) {
+    return this.jobService.findApplicationsOnMyJobs(req.user.id);
+  }
+
   // ================= GET ALL =================
   @Get()
   @ApiOperation({ summary: 'Get all jobs' })
