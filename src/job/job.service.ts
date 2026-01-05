@@ -1,3 +1,4 @@
+  // Find a single application on a job posted by the current user
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import type { Job, Prisma, ApplicationStatus } from '@prisma/client';
@@ -128,5 +129,19 @@ export class JobService {
       include: { user: true, job: true },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+    async findApplicationOnMyJob(applicationId: string, userId: string) {
+    const application = await this.prisma.application.findUnique({
+      where: { id: applicationId },
+      include: { job: true },
+    });
+    if (!application) {
+      throw new (await import('@nestjs/common')).NotFoundException('Application not found');
+    }
+    if (!application.job || application.job.postedById !== userId) {
+      throw new (await import('@nestjs/common')).ForbiddenException('You are not allowed to view this application');
+    }
+    return application;
   }
 }

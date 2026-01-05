@@ -1,4 +1,3 @@
-
 import {
   Controller,
   Get,
@@ -181,5 +180,23 @@ export class JobController {
   @ApiResponse({ status: 200, description: 'Job deleted' })
   remove(@Param('id') id: string): Promise<Job> {
     return this.jobService.remove(id);
+  }
+
+    // ================= GET ONE APPLICATION ON MY JOB =================
+  @UseGuards(JwtAuthGuard)
+  @Get('applications/:applicationId')
+  @ApiOperation({ summary: 'Get a single application made on a job posted by the logged-in user' })
+  @ApiResponse({ status: 200, description: 'Application found', type: ApplicationDto })
+  async findApplicationOnMyJob(
+    @Param('applicationId') applicationId: string,
+    @Request() req
+  ): Promise<ApplicationDto> {
+    const application = await this.jobService.findApplicationOnMyJob(applicationId, req.user.id);
+    // Convert nulls to undefined for DTO compatibility
+    return {
+      ...application,
+      coverLetter: application.coverLetter === null ? undefined : application.coverLetter,
+      resumeUrl: application.resumeUrl === null ? undefined : application.resumeUrl,
+    };
   }
 }
