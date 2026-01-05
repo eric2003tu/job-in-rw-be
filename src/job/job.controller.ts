@@ -1,3 +1,4 @@
+
 import {
   Controller,
   Get,
@@ -21,11 +22,50 @@ import type { Job } from '@prisma/client';
 import { JobWithAppCountDto } from './dto/job-with-app-count.dto';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
+import { ApplicationDto } from '../application/dto/application.dto';
+import { UpdateApplicationDto } from '../application/dto/update-application.dto';
 
 @ApiTags('jobs')
 @Controller('jobs')
 export class JobController {
   constructor(private readonly jobService: JobService) {}
+
+  // ================= UPDATE APPLICATION STATUS ON MY JOB =================
+  @UseGuards(JwtAuthGuard)
+  @Patch('applications/:applicationId/status')
+  @ApiOperation({ summary: 'Update status of an application made on a job posted by the logged-in user' })
+  @ApiBody({
+    type: UpdateApplicationDto,
+    examples: {
+      example1: {
+        summary: 'Update application status',
+        value: {
+          status: 'REVIEWED',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Application status updated', type: ApplicationDto })
+  async updateApplicationStatus(
+    @Param('applicationId') applicationId: string,
+    @Body() data: UpdateApplicationDto,
+    @Request() req
+  ): Promise<ApplicationDto> {
+    if (!data.status) {
+      throw new (await import('@nestjs/common')).BadRequestException('Status is required');
+    }
+    const updated = await this.jobService.updateApplicationStatusOnMyJob(
+      applicationId,
+      data.status,
+      req.user.id
+    );
+    // Fix for ApplicationDto: convert nulls to undefined for coverLetter and resumeUrl
+    return {
+      ...updated,
+      coverLetter: updated.coverLetter === null ? undefined : updated.coverLetter,
+      resumeUrl: updated.resumeUrl === null ? undefined : updated.resumeUrl,
+    };
+  }
 
   // ================= CREATE =================
   @UseGuards(JwtAuthGuard)

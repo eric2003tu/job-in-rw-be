@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import type { Job, Prisma } from '@prisma/client';
+import type { Job, Prisma, ApplicationStatus } from '@prisma/client';
 import { CreateJobDto } from './dto/create-job.dto';
 
 @Injectable()
@@ -35,6 +35,31 @@ export class JobService {
       ...job,
       applicationsCount: job._count.applications,
     }));
+  }
+
+    // Update application status if the current user is the job poster
+  async updateApplicationStatusOnMyJob(
+    applicationId: string,
+    status: string,
+    userId: string
+  ) {
+    // Find the application and its job
+    const application = await this.prisma.application.findUnique({
+      where: { id: applicationId },
+      include: { job: true },
+    });
+    if (!application) {
+      throw new (await import('@nestjs/common')).NotFoundException('Application not found');
+    }
+    if (!application.job || application.job.postedById !== userId) {
+      throw new (await import('@nestjs/common')).ForbiddenException('You are not allowed to update this application');
+    }
+    // Only allow status update
+    const updated = await this.prisma.application.update({
+      where: { id: applicationId },
+      data: { status: status as ApplicationStatus },
+    });
+    return updated;
   }
 
   async findOne(id: string): Promise<any | null> {
