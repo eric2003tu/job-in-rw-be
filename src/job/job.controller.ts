@@ -1,3 +1,4 @@
+
 import {
   Controller,
   Get,
@@ -192,6 +193,24 @@ export class JobController {
     @Request() req
   ): Promise<ApplicationDto> {
     const application = await this.jobService.findApplicationOnMyJob(applicationId, req.user.id);
+    // Convert nulls to undefined for DTO compatibility
+    return {
+      ...application,
+      coverLetter: application.coverLetter === null ? undefined : application.coverLetter,
+      resumeUrl: application.resumeUrl === null ? undefined : application.resumeUrl,
+    };
+  }
+
+    // ================= GET ONE OF MY APPLICATIONS =================
+  @UseGuards(JwtAuthGuard)
+  @Get('my/applications/:applicationId')
+  @ApiOperation({ summary: 'Get details of an application made by the logged-in user' })
+  @ApiResponse({ status: 200, description: 'Application found', type: ApplicationDto })
+  async findMyApplication(
+    @Param('applicationId') applicationId: string,
+    @Request() req
+  ): Promise<ApplicationDto> {
+    const application = await this.jobService.findMyApplication(applicationId, req.user.id);
     // Convert nulls to undefined for DTO compatibility
     return {
       ...application,
